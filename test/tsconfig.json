@@ -1,0 +1,24 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "composite": true,
+        "sourceMap": false,
+        "allowJs": false,
+        "noEmit": false,
+        "outDir": "../__test_js",
+        "lib": [
+            "es2017"
+        ],
+        "types": [
+            "node",
+            "mocha"
+        ]
+    },
+    "references": [
+        {
+            // `src/tsconfig.json` will no emit any code.
+            // So we should run this file after calling 'make'.
+            "path": "../src/tsconfig.json"
+        }
+    ]
+}

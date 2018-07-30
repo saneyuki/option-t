@@ -8,6 +8,7 @@ SRC_TEST_DIR := $(CURDIR)/test
 DIST_ESM_DIR := $(CURDIR)/esm
 DIST_COMMONJS_DIR := $(CURDIR)/cjs
 DIST_MIXED_LIB_DIR := $(CURDIR)/lib
+export TEST_CODE_DIR := $(CURDIR)/__test_js
 TEST_CACHE_DIR := $(CURDIR)/__test_cache
 TYPE_TEST_DIR := $(CURDIR)/__type_test
 TMP_MJS_DIR := $(CURDIR)/__tmp_mjs
@@ -34,7 +35,7 @@ help:
 # Clean
 ###########################
 .PHONY: clean
-clean: clean_build clean_test_cache clean_type_test clean_tmp_mjs
+clean: clean_build clean_test_cache clean_type_test clean_tmp_mjs clean_test_js
 
 .PHONY: clean_build
 clean_build: clean_build_cjs clean_build_esm clean_build_mixedlib
@@ -55,6 +56,10 @@ clean_build_mixedlib:
 .PHONY: clean_test_cache
 clean_test_cache:
 	$(NPM_BIN)/del $(TEST_CACHE_DIR)
+
+.PHONY: clean_test_js
+clean_test_js:
+	$(NPM_BIN)/del $(TEST_CODE_DIR)
 
 .PHONY: clean_type_test
 clean_type_test:
@@ -171,9 +176,13 @@ test: lint build mocha tscheck ## Run all tests
 tscheck: clean_type_test build ## Test check typing consistency.
 	$(NPM_BIN)/tsc --project $(CURDIR)/tsconfig_test.json --noEmit
 
+.PHONY: generate_test_js
+generate_test_js: build clean_test_js
+	$(MAKE) build -C $(SRC_TEST_DIR)
+
 .PHONY: test_preprocess
-test_preprocess: clean_test_cache
-	$(NPM_BIN)/babel $(SRC_TEST_DIR) --out-dir $(TEST_CACHE_DIR) --extensions .js --presets power-assert
+test_preprocess: clean_test_cache generate_test_js
+	$(NPM_BIN)/babel $(TEST_CODE_DIR) --out-dir $(TEST_CACHE_DIR) --extensions .js --presets power-assert
 
 .PHONY: mocha
 mocha: test_preprocess build
